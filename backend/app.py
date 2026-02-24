@@ -1,24 +1,32 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
 
 app = Flask(__name__)
 CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-db = SQLAlchemy(app)
+class Base(DeclarativeBase):
+    pass
+db = SQLAlchemy(app, model_class=Base)
 
-import models
+class Transaction(db.Model):
+    id = db.mapped_column(db.Integer, primary_key=True)
+    amount = db.mapped_column(db.Float, nullable=False)
+    category = db.mapped_column(db.String(50), nullable=False)
+    description = db.mapped_column(db.String(200), nullable=False)
+    date = db.mapped_column(db.Date, default=db.func.current_date())
 
 @app.route("/transactions")
 def get_transactions():
-    transactions = db.session.execute(db.select(models.Transaction)).all()
+    transactions = db.session.execute(db.select(Transaction)).all()
     return jsonify([dict(transaction) for transaction in transactions]) # check if can remove jsonify and just return list
 
 @app.route("/transactions", methods=["POST"])
 def add_transaction():
     data = request.get_json()
-    new_transaction = models.Transaction(
+    new_transaction = Transaction(
         description=data["description"],
         amount=data["amount"],
         category=data["category"]
@@ -29,7 +37,7 @@ def add_transaction():
 
 @app.route("/transactions/<int:id>", methods=["DELETE"])
 def delete_transaction(id):
-    transaction = db.session.get_or_404(models.Transaction, id)
+    transaction = db.session.get_or_404(Transaction, id)
     db.session.delete(transaction)
     db.session.commit()
     return jsonify({"message": "Transaction deleted successfully"}), 200

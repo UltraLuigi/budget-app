@@ -3,7 +3,9 @@ import { useState } from "react";
 
 export async function loader({ request }) {
     const apiUrl = "localhost:5000/transactions";
-    const transactions = await fetch(apiUrl).then(res => res.json());
+    const res = await fetch(apiUrl);
+    const transactions = await res.json();
+    
     return transactions;
 }
 
