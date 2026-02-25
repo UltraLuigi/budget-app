@@ -34,7 +34,7 @@ export async function action({ request }) {
             method: "DELETE"
         });
         if (!response.ok) {
-            throw new Error("Failed to delete transaction: " + response.status + " " + response.statusText);
+            throw new Error("Failed to delete transaction" + response.statusText);
         }
         return response.json();
     }
