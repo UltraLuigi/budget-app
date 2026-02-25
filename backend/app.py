@@ -20,8 +20,14 @@ class Transaction(db.Model):
 
 @app.route("/transactions")
 def get_transactions():
-    transactions = db.session.execute(db.select(Transaction)).all()
-    return jsonify([dict(transaction) for transaction in transactions]) # check if can remove jsonify and just return list
+    transactions = db.session.scalars(db.select(Transaction)).all()
+    return jsonify([{
+        "id": t.id,
+        "amount": t.amount,
+        "category": t.category,
+        "description": t.description,
+        "date": t.date.isoformat() if t.date else None
+    } for t in transactions])
 
 @app.route("/transactions", methods=["POST"])
 def add_transaction():

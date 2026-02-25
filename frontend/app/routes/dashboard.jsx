@@ -1,4 +1,4 @@
-import { useFetcher } from "react-router";
+import { useFetcher , useLoaderData } from "react-router";
 import { useState } from "react";
 
 export async function loader({ request }) {
@@ -10,7 +10,7 @@ export async function loader({ request }) {
 }
 
 export async function action({ request }) {
-    const apiUrl = "http://localhost:5000";
+    const apiUrl = "http://localhost:5000/transactions";
 
     if (request.method === "POST") {
         const formData = await request.formData();
@@ -19,7 +19,7 @@ export async function action({ request }) {
             category: formData.get("category"),
             description: formData.get("description")
         };
-        const response = await fetch(apiUrl + request.action, {
+        const response = await fetch(apiUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -28,7 +28,9 @@ export async function action({ request }) {
         });
         return response.json();
     } else if (request.method === "DELETE") {
-        const response = await fetch(apiUrl + request.action, {
+        const formData = await request.formData();
+        const id = formData.get("id");
+        const response = await fetch(`${apiUrl}/${id}`, {
             method: "DELETE"
         });
         return response.json();
@@ -44,7 +46,7 @@ function TransactionForm() {
     });
 
     return (
-        <fetcher.Form method="POST" action="/transactions">
+        <fetcher.Form method="POST">
             <input 
                 type="number"
                 name="amount"
@@ -86,7 +88,7 @@ function TransactionList({ loaderData }) {
                         {transaction.description}: ${transaction.amount} ({transaction.category}) | ({transaction.date})
                     </p>
                     <button onClick={() => {
-                        fetcher.submit(null, { method: "DELETE", action: `/transactions/${transaction.id}` });
+                        fetcher.submit({ id: transaction.id.toString() }, { method: "DELETE" });
                     }}>
                         Delete
                     </button>
@@ -97,13 +99,14 @@ function TransactionList({ loaderData }) {
 }
 
 export default function Dashboard() {
+    const loaderData = useLoaderData();
     return (
         <div className="p-30">
             <h1>Smart Budget Dashboard</h1>
             <TransactionForm />
 
             <h2>Transactions</h2>
-            <TransactionList />
+            <TransactionList loaderData={loaderData}/>
         </div>
     )
 }
