@@ -1,4 +1,4 @@
-import { useFetcher , useLoaderData } from "react-router";
+import { Form, useSubmit , useLoaderData } from "react-router";
 import { useState } from "react";
 
 export async function loader({ request }) {
@@ -33,12 +33,14 @@ export async function action({ request }) {
         const response = await fetch(`${apiUrl}/${id}`, {
             method: "DELETE"
         });
+        if (!response.ok) {
+            throw new Error("Failed to delete transaction" + response.statusText);
+        }
         return response.json();
     }
 }
 
 function TransactionForm() {
-    let fetcher = useFetcher();
     const [formData, setFormData] = useState({
         amount: "",
         category: "",
@@ -46,7 +48,7 @@ function TransactionForm() {
     });
 
     return (
-        <fetcher.Form method="POST">
+        <Form method="POST">
             <input 
                 type="number"
                 name="amount"
@@ -69,12 +71,12 @@ function TransactionForm() {
                 placeholder="Description"
             />
             <button type="submit">Add Transaction</button>
-        </fetcher.Form>
+        </Form>
     )
 }
 
 function TransactionList({ loaderData }) {
-    let fetcher = useFetcher();
+    let submit = useSubmit();
     const [transactions, setTransactions] = useState(loaderData);
 
     if (transactions === undefined) {
@@ -88,7 +90,7 @@ function TransactionList({ loaderData }) {
                         {transaction.description}: ${transaction.amount} ({transaction.category}) | ({transaction.date})
                     </p>
                     <button onClick={() => {
-                        fetcher.submit({ id: transaction.id.toString() }, { method: "DELETE" });
+                        submit({ id: transaction.id.toString() }, { method: "DELETE" });
                     }}>
                         Delete
                     </button>
