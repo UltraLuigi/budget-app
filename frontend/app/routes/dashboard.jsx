@@ -33,6 +33,9 @@ export async function action({ request }) {
         const response = await fetch(`${apiUrl}/${id}`, {
             method: "DELETE"
         });
+        if (!response.ok) {
+            throw new Error("Failed to delete transaction: " + response.status + " " + response.statusText);
+        }
         return response.json();
     }
 }

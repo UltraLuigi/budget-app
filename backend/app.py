@@ -43,7 +43,7 @@ def add_transaction():
 
 @app.route("/transactions/<int:id>", methods=["DELETE"])
 def delete_transaction(id):
-    transaction = db.session.get_or_404(Transaction, id)
+    transaction = db.get_or_404(Transaction, id)
     db.session.delete(transaction)
     db.session.commit()
     return jsonify({"message": "Transaction deleted successfully"}), 200
