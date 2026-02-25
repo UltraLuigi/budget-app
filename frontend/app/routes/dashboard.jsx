@@ -2,7 +2,7 @@ import { useFetcher } from "react-router";
 import { useState } from "react";
 
 export async function loader({ request }) {
-    const apiUrl = "localhost:5000/transactions";
+    const apiUrl = "http://localhost:5000/transactions";
     const res = await fetch(apiUrl);
     const transactions = await res.json();
     
@@ -10,7 +10,7 @@ export async function loader({ request }) {
 }
 
 export async function action({ request }) {
-    const apiUrl = "localhost:5000";
+    const apiUrl = "http://localhost:5000";
 
     if (request.method === "POST") {
         const formData = await request.formData();
