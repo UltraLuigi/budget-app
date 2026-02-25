@@ -75,6 +75,9 @@ function TransactionList({ loaderData }) {
     let fetcher = useFetcher();
     const [transactions, setTransactions] = useState(loaderData);
 
+    if (transactions === undefined) {
+        return <p>No transactions found.</p>;
+    }
     return (
         <div>
             {transactions.map(transaction => (
