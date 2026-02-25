@@ -1,4 +1,4 @@
-import { Form, useSubmit , useLoaderData } from "react-router";
+import { useFetcher , useLoaderData } from "react-router";
 import { useState } from "react";
 
 export async function loader({ request }) {
@@ -41,6 +41,7 @@ export async function action({ request }) {
 }
 
 function TransactionForm() {
+    let fetcher = useFetcher();
     const [formData, setFormData] = useState({
         amount: "",
         category: "",
@@ -48,7 +49,7 @@ function TransactionForm() {
     });
 
     return (
-        <Form method="POST">
+        <fetcher.Form method="POST">
             <input 
                 type="number"
                 name="amount"
@@ -71,12 +72,12 @@ function TransactionForm() {
                 placeholder="Description"
             />
             <button type="submit">Add Transaction</button>
-        </Form>
+        </fetcher.Form>
     )
 }
 
 function TransactionList({ loaderData }) {
-    let submit = useSubmit();
+    let fetcher = useFetcher();
     const [transactions, setTransactions] = useState(loaderData);
 
     if (transactions === undefined) {
@@ -90,7 +91,7 @@ function TransactionList({ loaderData }) {
                         {transaction.description}: ${transaction.amount} ({transaction.category}) | ({transaction.date})
                     </p>
                     <button onClick={() => {
-                        submit({ id: transaction.id.toString() }, { method: "DELETE" });
+                        fetcher.submit({ id: transaction.id.toString() }, { method: "DELETE" });
                     }}>
                         Delete
                     </button>
