@@ -3,13 +3,15 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 
-app = Flask(__name__)
-CORS(app)
+application = Flask(__name__)
+CORS(application)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+
 class Base(DeclarativeBase):
     pass
-db = SQLAlchemy(app, model_class=Base)
+
+db = SQLAlchemy(application, model_class=Base)
 
 class Transaction(db.Model):
     id = db.mapped_column(db.Integer, primary_key=True)
@@ -18,7 +20,7 @@ class Transaction(db.Model):
     description = db.mapped_column(db.String(200), nullable=False)
     date = db.mapped_column(db.Date, default=db.func.current_date())
 
-@app.route("/transactions")
+@application.route("/transactions")
 def get_transactions():
     transactions = db.session.scalars(db.select(Transaction)).all()
     return jsonify([{
@@ -29,7 +31,7 @@ def get_transactions():
         "date": t.date.isoformat() if t.date else None
     } for t in transactions])
 
-@app.route("/transactions", methods=["POST"])
+@application.route("/transactions", methods=["POST"])
 def add_transaction():
     data = request.get_json()
     new_transaction = Transaction(
@@ -41,14 +43,21 @@ def add_transaction():
     db.session.commit()
     return jsonify({"message": "Transaction added successfully"}), 201
 
-@app.route("/transactions/<int:id>", methods=["DELETE"])
+@application.route("/transactions/<int:id>", methods=["DELETE"])
 def delete_transaction(id):
     transaction = db.get_or_404(Transaction, id)
     db.session.delete(transaction)
     db.session.commit()
     return jsonify({"message": "Transaction deleted successfully"}), 200
 
-if __name__ == '__main__':
-    with app.app_context():
+@application.route("/")
+def root():
+    return jsonify({"status": "ok"}), 200
+
+@application.route("/health")
+def health():
+    return "OK", 200
+
+if __name__ == "__main__":
+    with application.app_context():
         db.create_all()
-    app.run(debug=True)
